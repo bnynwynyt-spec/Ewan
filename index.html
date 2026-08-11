@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إيوان | حوّل فكرتك إلى واقع باحترافية</title>
+    <!-- خط تجوال للحصول على مظهر عربي عصري -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- مكتبة الأيقونات لشعار تيليجرام -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-primary: #0A1F44;
+            --bg-secondary: #0D1117;
+            --card-bg: rgba(22, 27, 34, 0.65);
+            --btn-blue: #2563EB;
+            --telegram-blue: #229ED9;
+            --text-white: #FFFFFF;
+            --text-gray: #BFC7D5;
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-secondary);
+            color: var(--text-white);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* خلفية متحركة خفيفة */
+        .ambient-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: -1;
+            overflow: hidden;
+            background: var(--bg-secondary);
+        }
+        .ambient-bg::before, .ambient-bg::after {
+            content: '';
+            position: absolute;
+            width: 50vw; height: 50vw;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--bg-primary) 0%, transparent 60%);
+            animation: float 15s infinite alternate ease-in-out;
+            opacity: 0.4;
+        }
+        .ambient-bg::after {
+            right: -10vw; bottom: -10vw;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.2) 0%, transparent 60%);
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(50px, 50px) scale(1.2); }
+        }
+
+        /* Loading Screen */
+        #loader {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-secondary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+        .cube-loader {
+            width: 60px; height: 60px;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: rotateCube 2s infinite linear;
+            margin-bottom: 20px;
+        }
+        .cube-face {
+            position: absolute; width: 100%; height: 100%;
+            border: 2px solid var(--btn-blue);
+            background: rgba(37, 99, 235, 0.1);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px;
+        }
+        .front  { transform: translateZ(30px); }
+        .back   { transform: rotateY(180deg) translateZ(30px); }
+        .right  { transform: rotateY(90deg) translateZ(30px); }
+        .left   { transform: rotateY(-90deg) translateZ(30px); }
+        .top    { transform: rotateX(90deg) translateZ(30px); }
+        .bottom { transform: rotateX(-90deg) translateZ(30px); }
+        
+        @keyframes rotateCube {
+            0% { transform: rotateX(0) rotateY(0); }
+            100% { transform: rotateX(360deg) rotateY(360deg); }
+        }
+
+        /* Glassmorphism Class */
+        .glass {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+        .glass:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(37, 99, 235, 0.2);
+            border-color: rgba(37, 99, 235, 0.4);
+        }
+
+        /* Navbar */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 5%;
+            position: fixed;
+            width: 100%;
+            top: 0; z-index: 100;
+            background: rgba(13, 17, 23, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .logo { font-size: 2rem; font-weight: 900; color: var(--text-white); display: flex; align-items: center; gap: 10px; }
+        .logo span { color: var(--btn-blue); }
+        .nav-links a { color: var(--text-gray); text-decoration: none; margin: 0 15px; transition: color 0.3s; font-weight: 500; }
+        .nav-links a:hover { color: var(--text-white); }
+        
+        /* Buttons */
+        .btn {
+            background: var(--btn-blue);
+            color: var(--text-white);
+            padding: 12px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            box-shadow: 0 0 15px rgba(37, 99, 235, 0.4);
+            position: relative;
+            overflow: hidden;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+        .btn:hover::before { left: 100%; }
+        .btn:hover { box-shadow: 0 0 25px rgba(37, 99, 235, 0.7); transform: scale(1.05); }
+
+        .btn-telegram {
+            background: var(--telegram-blue);
+            box-shadow: 0 0 15px rgba(34, 158, 217, 0.4);
+        }
+        .btn-telegram:hover { box-shadow: 0 0 25px rgba(34, 158, 217, 0.7); }
+
+        /* Floating Telegram Button */
+        .telegram-float {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            background-color: var(--telegram-blue);
+            color: #FFF;
+            border-radius: 50px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(34, 158, 217, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            z-index: 1000;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            gap: 10px;
+        }
+        .telegram-float:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 0 30px rgba(34, 158, 217, 0.8);
+            color: #FFF;
+        }
+        .telegram-float i {
+            font-size: 1.4rem;
+        }
+
+        /* Hero Section */
+        header {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 20px;
+            margin-top: 50px;
+        }
+        header h1 { font-size: 4rem; margin-bottom: 20px; text-shadow: 0 0 20px rgba(255,255,255,0.2); }
+        header p { font-size: 1.5rem; color: var(--text-gray); margin-bottom: 40px; word-spacing: 5px; }
+
+        /* Sections General */
+        section { padding: 100px 5%; }
+        .section-title { text-align: center; font-size: 2.5rem; margin-bottom: 60px; color: var(--text-white); position: relative; }
+        .section-title::after {
+            content: ''; position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%);
+            width: 80px; height: 4px; background: var(--btn-blue); border-radius: 2px;
+            box-shadow: 0 0 10px var(--btn-blue);
+        }
+
+        /* Services Grid */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        .service-card { padding: 30px; display: flex; flex-direction: column; justify-content: space-between; }
+        .service-icon { font-size: 3.5rem; margin-bottom: 20px; filter: drop-shadow(0 0 15px rgba(255,255,255,0.2)); }
+        .service-card h3 { font-size: 1.5rem; margin-bottom: 15px; color: var(--text-white); }
+        .service-card p { color: var(--text-gray); font-size: 0.95rem; line-height: 1.6; margin-bottom: 10px; }
+        
+        .price-tag {
+            display: inline-block;
+            background: rgba(37, 99, 235, 0.15);
+            color: #60A5FA;
+            border: 1px solid rgba(37, 99, 235, 0.4);
+            padding: 6px 16px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: auto;
+        }
+        .tag-item {
+            background: rgba(37, 99, 235, 0.15);
+            border: 1px solid rgba(37, 99, 235, 0.3);
+            color: var(--text-gray);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        .tag-item:hover {
+            background: rgba(37, 99, 235, 0.3);
+            color: var(--text-white);
+            border-color: var(--btn-blue);
+        }
+
+        /* Stats & Features */
+        .stats-container { display: flex; justify-content: center; flex-wrap: wrap; gap: 30px; margin-top: 60px; }
+        .stat-box { text-align: center; }
+        .stat-num { font-size: 3rem; font-weight: 900; color: var(--btn-blue); text-shadow: 0 0 20px rgba(37, 99, 235, 0.5); }
+        .stat-text { color: var(--text-gray); font-size: 1.1rem; }
+
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 50px; }
+        .feature-item { padding: 20px; text-align: center; }
+        .feature-item h4 { font-size: 1.2rem; color: var(--btn-blue); margin-bottom: 10px; }
+
+        /* Scroll Animations */
+        .reveal { opacity: 0; transform: translateY(50px); transition: all 0.8s ease; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        @media (max-width: 768px) {
+            header h1 { font-size: 2.5rem; }
+            header p { font-size: 1rem; word-spacing: normal; }
+            .nav-links { display: none; }
+            
+            /* تعديل زر تيليجرام العائم للموبايل */
+            .telegram-float {
+                bottom: 20px;
+                left: 20px;
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Loading Screen -->
+    <div id="loader">
+        <div class="cube-loader">
+            <div class="cube-face front"></div>
+            <div class="cube-face back"></div>
+            <div class="cube-face right"></div>
+            <div class="cube-face left"></div>
+            <div class="cube-face top"></div>
+            <div class="cube-face bottom"></div>
+        </div>
+        <h2 style="color: var(--text-gray);">جاري تحميل إيوان...</h2>
+    </div>
+
+    <div class="ambient-bg"></div>
+
+    <!-- Navbar -->
+    <nav>
+        <div class="logo">إيوان<span>.</span></div>
+        <div class="nav-links">
+            <a href="#services">الخدمات</a>
+            <a href="#features">لماذا نحن</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header>
+        <h1 class="reveal">حوّل فكرتك إلى واقع باحترافية</h1>
+        <p class="reveal" style="transition-delay: 0.2s;">بحوث احترافية • تصاميم إبداعية • تصميم ثلاثي الأبعاد • خدمات تعليمية</p>
+        <div class="reveal" style="transition-delay: 0.4s;">
+            <!-- زر تيليجرام الرئيسي -->
+            <a href="https://t.me/JILZ90?utm_source=chatgpt.com" target="_blank" class="btn btn-telegram">
+                <i class="fab fa-telegram"></i> تواصل للخاص للطلب
+            </a>
+        </div>
+    </header>
+
+    <!-- Services Section -->
+    <section id="services">
+        <h2 class="section-title reveal">خدماتنا</h2>
+        <div class="services-grid">
+            
+            <!-- Service 1 -->
+            <div class="service-card glass reveal">
+                <div>
+                    <div class="service-icon">📚</div>
+                    <h3>البحوث والملخصات</h3>
+                    <p>إذا عندك (كتاب، ملف PDF، مستند Word، أوراق كثيرة) نحن نتولى الأمر:</p>
+                    <div class="price-tag">ابتداءً من 25 ريال</div>
+                </div>
+                <div class="tags-container">
+                    <span class="tag-item">تلخيص كتب وPDF</span>
+                    <span class="tag-item">استخراج أهم النقاط</span>
+                    <span class="tag-item">تنظيم المستندات</span>
+                    <span class="tag-item">كتابة الأبحاث</span>
+                </div>
+            </div>
+
+            <!-- Service 2 -->
+            <div class="service-card glass reveal" style="transition-delay: 0.2s;">
+                <div>
+                    <div class="service-icon">🎓</div>
+                    <h3>التعليم والمدارس</h3>
+                    <p>خدمات متكاملة للمعلمين، المدراء، والمدارس لتميز الأنشطة:</p>
+                    <div class="price-tag">ابتداءً من 20 ريال</div>
+                </div>
+                <div class="tags-container">
+                    <span class="tag-item">فيديو للمدرسة</span>
+                    <span class="tag-item">حفلات تخرج وتكريم</span>
+                    <span class="tag-item">لوحات وبوسترات</span>
+                    <span class="tag-item">اليوم الوطني والمناسبات</span>
+                    <span class="tag-item">أسبوع الموهبة/البيئة</span>
+                    <span class="tag-item">تصميم حسب الطلب</span>
+                </div>
+            </div>
+
+            <!-- Service 3 -->
+            <div class="service-card glass reveal" style="transition-delay: 0.4s;">
+                <div>
+                    <div class="service-icon">💍</div>
+                    <h3>تصميم المناسبات</h3>
+                    <p>نجعل لحظاتك السعيدة ذكرى لا تُنسى بتصاميم ومونتاج احترافي:</p>
+                    <div class="price-tag">ابتداءً من 30 ريال</div>
+                </div>
+                <div class="tags-container">
+                    <span class="tag-item">زواج، ملكة، وخطوبة</span>
+                    <span class="tag-item">دعوات إلكترونية</span>
+                    <span class="tag-item">فيديو ومونتاج</span>
+                    <span class="tag-item">ثيمات تخرج ومواليد</span>
+                </div>
+            </div>
+
+            <!-- Service 4 -->
+            <div class="service-card glass reveal" style="transition-delay: 0.6s;">
+                <div>
+                    <div class="service-icon">🏠</div>
+                    <h3>التصميم ثلاثي الأبعاد 3D</h3>
+                    <p>تجسيد واقعي لمشروعك (غرف، فلل، مطاعم، مكاتب، حدائق، وأي مشروع 3D):</p>
+                    <div class="price-tag">ابتداءً من 60 ريال</div>
+                </div>
+                <div class="tags-container">
+                    <span class="tag-item">صور واقعية 4K</span>
+                    <span class="tag-item">فيديو سينمائي</span>
+                    <span class="tag-item">جولة افتراضية</span>
+                    <span class="tag-item">تصميم متعدد الزوايا</span>
+                </div>
+            </div>
+
+            <!-- Service 5 -->
+            <div class="service-card glass reveal" style="transition-delay: 0.8s;">
+                <div>
+                    <div class="service-icon">👕</div>
+                    <h3>تصميم الملابس</h3>
+                    <p>إذا براسك تصميم معين أو فكرة مميزة بخيالك، إحنا نضبطها لك ونحولها لواقع:</p>
+                    <div class="price-tag">ابتداءً من 35 ريال</div>
+                </div>
+                <div class="tags-container">
+                    <span class="tag-item">رجالي</span>
+                    <span class="tag-item">نسائي</span>
+                    <span class="tag-item">تيشرتات وهوديز</span>
+                    <span class="tag-item">شعارات مخصصة</span>
+                    <span class="tag-item">أزياء الشارع</span>
+                    <span class="tag-item">تصاميم 3D للأزياء</span>
+                </div>
+            </div>
+
+            <!-- Service 6 -->
+            <div class="service-card glass reveal" style="transition-delay: 1.0s;">
+                <div>
+                    <div class="service-icon">👗</div>
+                    <h3>تصميم الفساتين</h3>
+                    <p>نصمم لك فستان أحلامك لأي مناسبة، سواء كان زفاف، سهرة، أو تصميم حصري:</p>
+                    <div class="price-tag">ابتداءً من 35 ريال</div>
+                </div>
+                <div class="tags-container">
+                    <span class="tag-item">فساتين زفاف وسهرة</span>
+                    <span class="tag-item">رسم أزياء Sketch</span>
+                    <span class="tag-item">تصاميم 3D للفستان</span>
+                    <span class="tag-item">أفكار حصرية دقيقة</span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Why Us & Stats Section -->
+    <section id="features">
+        <h2 class="section-title reveal">لماذا إيوان؟</h2>
+        
+        <div class="features-grid">
+            <div class="feature-item glass reveal"><div class="service-icon" style="font-size: 2.5rem; margin-bottom: 5px;">⭐</div><h4>جودة احترافية</h4><p style="color: var(--text-gray); font-size: 0.9rem;">أعمال تنافسية بدقة عالية</p></div>
+            <div class="feature-item glass reveal" style="transition-delay: 0.1s;"><div class="service-icon" style="font-size: 2.5rem; margin-bottom: 5px;">⚡</div><h4>سرعة التنفيذ</h4><p style="color: var(--text-gray); font-size: 0.9rem;">التزام تام بالمواعيد</p></div>
+            <div class="feature-item glass reveal" style="transition-delay: 0.2s;"><div class="service-icon" style="font-size: 2.5rem; margin-bottom: 5px;">🔄</div><h4>تعديلات مرنة</h4><p style="color: var(--text-gray); font-size: 0.9rem;">رضاك هو غايتنا الأولى</p></div>
+            <div class="feature-item glass reveal" style="transition-delay: 0.3s;"><div class="service-icon" style="font-size: 2.5rem; margin-bottom: 5px;">💰</div><h4>أسعار مناسبة</h4><p style="color: var(--text-gray); font-size: 0.9rem;">قيمة ممتازة مقابل السعر</p></div>
+            <div class="feature-item glass reveal" style="transition-delay: 0.4s;"><div class="service-icon" style="font-size: 2.5rem; margin-bottom: 5px;">🎧</div><h4>دعم دائم</h4><p style="color: var(--text-gray); font-size: 0.9rem;">متواجدون لخدمتك دائماً</p></div>
+        </div>
+
+        <div class="stats-container reveal" style="margin-top: 80px;">
+            <div class="stat-box">
+                <div style="font-size: 2.2rem; margin-bottom: 5px;">🕒</div>
+                <div style="color: var(--btn-blue); font-weight: 700; font-size: 1.2rem; margin-bottom: 5px;">وقت العمل</div>
+                <div style="color: var(--text-white); font-size: 1rem;">من 3 العصر إلى 5 الفجر</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="text-align: center; padding: 40px; border-top: 1px solid var(--glass-border); background: rgba(13, 17, 23, 0.9);">
+        <div class="logo" style="justify-content: center; margin-bottom: 15px;">إيوان<span>.</span></div>
+        <p style="color: var(--text-gray); font-size: 0.9rem;">جميع الحقوق محفوظة &copy; 2026</p>
+    </footer>
+
+    <!-- زر تيليجرام العائم للمراسلة المباشرة -->
+    <a href="https://t.me/JILZ90?utm_source=chatgpt.com" target="_blank" class="telegram-float">
+        <i class="fab fa-telegram"></i> تواصل للخاص للطلب
+    </a>
+
+    <script>
+        // إخفاء شاشة التحميل
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const loader = document.getElementById('loader');
+                loader.style.opacity = '0';
+                setTimeout(() => loader.style.display = 'none', 500);
+            }, 1200);
+        });
+
+        // تأثيرات الظهور عند التمرير
+        function reveal() {
+            var reveals = document.querySelectorAll(".reveal");
+            for (var i = 0; i < reveals.length; i++) {
+                var windowHeight = window.innerHeight;
+                var elementTop = reveals[i].getBoundingClientRect().top;
+                var elementVisible = 100;
+                if (elementTop < windowHeight - elementVisible) {
+                    reveals[i].classList.add("active");
+                }
+            }
+        }
+        window.addEventListener("scroll", reveal);
+        reveal(); // تشغيلها مرة عند التحميل
+    </script>
+</body>
+</html>
