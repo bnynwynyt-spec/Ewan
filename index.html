@@ -322,7 +322,7 @@
         }
         .btn-telegram-invoice:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(34, 158, 217, 0.5); }
 
-        /* --- نافذة تسجيل الدخول / إنشاء حساب --- */
+        /* --- نافذة تسجيل الدخول فقط --- */
         .auth-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
@@ -359,9 +359,6 @@
         }
         .auth-input:focus { border-color: var(--btn-blue); box-shadow: 0 0 10px rgba(37, 99, 235, 0.3); }
 
-        .auth-switch-text { margin-top: 20px; font-size: 0.95rem; color: var(--text-gray); }
-        .auth-switch-text a { color: var(--btn-blue); text-decoration: none; font-weight: bold; cursor: pointer; }
-
         .auth-warning-msg {
             background: rgba(239, 68, 68, 0.15);
             border: 1px solid var(--error-red);
@@ -370,6 +367,14 @@
             border-radius: 8px;
             font-size: 0.88rem;
             margin-bottom: 10px;
+            display: none;
+        }
+
+        .input-error-msg {
+            color: #FCA5A5;
+            font-size: 0.85rem;
+            text-align: right;
+            margin-top: -5px;
             display: none;
         }
 
@@ -412,7 +417,7 @@
         </div>
         <!-- منطقة حساب المستخدم / تسجيل الدخول -->
         <div id="navAuthArea">
-            <button class="btn" style="padding: 8px 18px; font-size: 0.95rem;" onclick="openAuthModal('login')">تسجيل الدخول</button>
+            <button class="btn" style="padding: 8px 18px; font-size: 0.95rem;" onclick="openAuthModal()">تسجيل الدخول</button>
         </div>
     </nav>
 
@@ -575,12 +580,12 @@
 
             <div class="invoice-details">
                 <div class="invoice-row">
-                    <span class="label">اسم العميل:</span>
+                    <span class="label">الاسم:</span>
                     <span class="value" id="modalCustomerName">---</span>
                 </div>
                 <div class="invoice-row">
-                    <span class="label">اسم المستخدم:</span>
-                    <span class="value" id="modalCustomerUsername">---</span>
+                    <span class="label">رقم الجوال:</span>
+                    <span class="value" id="modalCustomerPhone">---</span>
                 </div>
                 <div class="invoice-row">
                     <span class="label">رقم الطلب:</span>
@@ -614,212 +619,194 @@
     </div>
 
     <!-- ========================================= -->
-    <!-- نافذة تسجيل الدخول / إنشاء حساب (Auth Modal) -->
+    <!-- نافذة تسجيل الدخول (Auth Modal) -->
     <!-- ========================================= -->
     <div class="auth-overlay" id="authModal">
         <div class="auth-card">
             <i class="fas fa-times close-auth" onclick="closeAuthModal()"></i>
 
-            <!-- رسالة تحذير إن حاول الشراء بدون حساب -->
+            <!-- رسالة تحذير إن حاول الشراء بدون دخول -->
             <div class="auth-warning-msg" id="authNoticeMsg">
-                <i class="fas fa-lock"></i> يرجى تسجيل الدخول أو إنشاء حساب أولاً لتتمكن من الشراء!
+                <i class="fas fa-lock"></i> يرجى تسجيل الدخول أولاً لتتمكن من الشراء!
             </div>
 
             <!-- نموذج تسجيل الدخول -->
             <div id="loginFormContainer">
                 <h2 style="font-size: 1.6rem; color: var(--text-white); margin-bottom: 5px;">تسجيل الدخول</h2>
-                <p style="color: var(--text-gray); font-size: 0.9rem;">مرحباً بعودتك! أدخل بياناتك للدخول.</p>
+                <p style="color: var(--text-gray); font-size: 0.9rem;">مرحباً بك! أدخل بياناتك للبدء.</p>
 
                 <form class="auth-form" onsubmit="handleLogin(event)">
                     <div class="auth-input-group">
-                        <label>اسم المستخدم</label>
-                        <input type="text" id="loginUsername" class="auth-input" placeholder="ادخل اسم المستخدم" required>
+                        <label>الاسم الثلاثي</label>
+                        <input type="text" id="loginFullName" class="auth-input" placeholder="ادخل اسمك الثلاثي" required>
                     </div>
+                    
+                    <!-- رسالة خطأ التحقق من الاسم -->
+                    <div id="nameErrorMsg" class="input-error-msg">
+                        <i class="fas fa-exclamation-triangle"></i> خطأ: الرجاء كتابة الاسم بشكل صحيح (أحرف فقط).
+                    </div>
+                    
                     <div class="auth-input-group">
-                        <label>كلمة المرور</label>
-                        <input type="password" id="loginPass" class="auth-input" placeholder="••••••••" required>
+                        <label>رقم الجوال</label>
+                        <input type="tel" id="loginPhone" class="auth-input" placeholder="مثال: 0500000000" required>
                     </div>
+                    
+                    <!-- رسالة خطأ التحقق من رقم الجوال -->
+                    <div id="phoneErrorMsg" class="input-error-msg">
+                        <i class="fas fa-exclamation-triangle"></i> خطأ: الرجاء كتابة رقم جوال صحيح (أرقام فقط).
+                    </div>
+
                     <button type="submit" class="btn" style="width: 100%; margin-top: 10px; justify-content: center;">دخول</button>
                 </form>
-
-                <div class="auth-switch-text">
-                    ليس لديك حساب؟ <a onclick="switchAuthTab('register')">إنشاء حساب جديد</a>
-                </div>
-            </div>
-
-            <!-- نموذج إنشاء حساب -->
-            <div id="registerFormContainer" style="display: none;">
-                <h2 style="font-size: 1.6rem; color: var(--text-white); margin-bottom: 5px;">حساب جديد</h2>
-                <p style="color: var(--text-gray); font-size: 0.9rem;">أنشئ حسابك للبدء في استخدام إيوان.</p>
-
-                <form class="auth-form" onsubmit="handleRegister(event)">
-                    <div class="auth-input-group">
-                        <label>الاسم الكامل</label>
-                        <input type="text" id="regName" class="auth-input" placeholder="ادخل اسمك الكامل" required>
-                    </div>
-                    <div class="auth-input-group">
-                        <label>اسم المستخدم</label>
-                        <input type="text" id="regUsername" class="auth-input" placeholder="ادخل اسم المستخدم" required>
-                    </div>
-                    <div class="auth-input-group">
-                        <label>كلمة المرور</label>
-                        <input type="password" id="regPass" class="auth-input" placeholder="••••••••" required>
-                    </div>
-                    <button type="submit" class="btn" style="width: 100%; margin-top: 10px; justify-content: center;">تسجيل الحساب</button>
-                </form>
-
-                <div class="auth-switch-text">
-                    لديك حساب بالفعل؟ <a onclick="switchAuthTab('login')">تسجيل الدخول</a>
-                </div>
             </div>
         </div>
     </div>
 
-    <!-- جافاسكريبت المنصة وتفعيل كود الخصم ZS15 -->
+    <!-- ========================================= -->
+    <!-- السكربتات الخاصة بالصفحة (JavaScript) -->
+    <!-- ========================================= -->
     <script>
-        let currentUser = JSON.parse(localStorage.getItem('iwon_logged_user')) || null;
-        let pendingOrder = null;
-
-        function updateNavAuth() {
-            const authArea = document.getElementById('navAuthArea');
-            if (currentUser) {
-                authArea.innerHTML = `
-                    <div class="nav-user-info">
-                        <span class="nav-user-name"><i class="fas fa-user-check"></i> ${currentUser.name}</span>
-                        <button class="btn-logout" onclick="handleLogout()">خروج</button>
-                    </div>
-                `;
-            } else {
-                authArea.innerHTML = `<button class="btn" style="padding: 8px 18px; font-size: 0.95rem;" onclick="openAuthModal('login')">تسجيل الدخول</button>`;
-            }
-        }
-
+        // إخفاء شاشة التحميل عند فتح الصفحة
         window.addEventListener('load', () => {
-            const loader = document.getElementById('loader');
             setTimeout(() => {
-                loader.style.opacity = '0';
-                setTimeout(() => loader.style.display = 'none', 500);
-            }, 600);
-            updateNavAuth();
+                document.getElementById('loader').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loader').style.display = 'none';
+                }, 500);
+            }, 1000);
         });
 
-        // تفعيل خصم ZS15 بنسبة 10%
-        const discountInput = document.getElementById('liveDiscountInput');
-        const discountWrapper = document.getElementById('liveDiscountWrapper');
-        let isDiscountActive = false;
+        // متغيرات الجلسة
+        let isLoggedIn = false;
+        let currentUser = { name: "", phone: "" };
+        let discountMultiplier = 1; // 1 = no discount, 0.9 = 10% discount
 
-        discountInput.addEventListener('input', (e) => {
-            const code = e.target.value.trim().toUpperCase();
-            const prices = document.querySelectorAll('.price-val');
-
-            if (code === 'ZS15') {
-                isDiscountActive = true;
-                discountWrapper.classList.add('success');
-                prices.forEach(priceEl => {
-                    const basePrice = parseFloat(priceEl.getAttribute('data-base'));
-                    const discountedPrice = basePrice * 0.9;
-                    priceEl.textContent = discountedPrice % 1 === 0 ? discountedPrice : discountedPrice.toFixed(1);
-                    priceEl.classList.add('discounted');
-                });
-            } else {
-                isDiscountActive = false;
-                discountWrapper.classList.remove('success');
-                prices.forEach(priceEl => {
-                    const basePrice = priceEl.getAttribute('data-base');
-                    priceEl.textContent = basePrice;
-                    priceEl.classList.remove('discounted');
-                });
-            }
-        });
-
-        function openAuthModal(tab = 'login', showWarning = false) {
-            const modal = document.getElementById('authModal');
-            const warningMsg = document.getElementById('authNoticeMsg');
-            modal.classList.add('active');
-            
-            if (showWarning) {
-                warningMsg.style.display = 'block';
-            } else {
-                warningMsg.style.display = 'none';
-            }
-            switchAuthTab(tab);
+        // دوال نافذة تسجيل الدخول
+        function openAuthModal() {
+            document.getElementById('authModal').classList.add('active');
         }
 
         function closeAuthModal() {
             document.getElementById('authModal').classList.remove('active');
+            document.getElementById('authNoticeMsg').style.display = 'none';
+            document.getElementById('phoneErrorMsg').style.display = 'none';
+            document.getElementById('nameErrorMsg').style.display = 'none';
         }
 
-        function switchAuthTab(tab) {
-            const loginContainer = document.getElementById('loginFormContainer');
-            const registerContainer = document.getElementById('registerFormContainer');
-            if (tab === 'login') {
-                loginContainer.style.display = 'block';
-                registerContainer.style.display = 'none';
+        // دالة تسجيل الدخول
+        function handleLogin(event) {
+            event.preventDefault();
+            const name = document.getElementById('loginFullName').value;
+            const phone = document.getElementById('loginPhone').value;
+
+            // التحقق من المدخلات (مبسط)
+            const isNameValid = /^[a-zA-Z\u0600-\u06FF\s]+$/.test(name);
+            const isPhoneValid = /^[0-9]+$/.test(phone);
+
+            if (!isNameValid) {
+                document.getElementById('nameErrorMsg').style.display = 'block';
             } else {
-                loginContainer.style.display = 'none';
-                registerContainer.style.display = 'block';
+                document.getElementById('nameErrorMsg').style.display = 'none';
             }
-        }
 
-        function handleRegister(e) {
-            e.preventDefault();
-            const name = document.getElementById('regName').value;
-            const username = document.getElementById('regUsername').value;
-
-            currentUser = { name, username };
-            localStorage.setItem('iwon_logged_user', JSON.stringify(currentUser));
-            updateNavAuth();
-            closeAuthModal();
-
-            if (pendingOrder) {
-                processOrder(pendingOrder.serviceName, pendingOrder.category, pendingOrder.basePrice);
-                pendingOrder = null;
+            if (!isPhoneValid) {
+                document.getElementById('phoneErrorMsg').style.display = 'block';
+            } else {
+                document.getElementById('phoneErrorMsg').style.display = 'none';
             }
-        }
 
-        function handleLogin(e) {
-            e.preventDefault();
-            const username = document.getElementById('loginUsername').value;
-            currentUser = { name: username, username: username };
-            localStorage.setItem('iwon_logged_user', JSON.stringify(currentUser));
-            updateNavAuth();
-            closeAuthModal();
-
-            if (pendingOrder) {
-                processOrder(pendingOrder.serviceName, pendingOrder.category, pendingOrder.basePrice);
-                pendingOrder = null;
+            if (isNameValid && isPhoneValid) {
+                isLoggedIn = true;
+                currentUser = { name: name, phone: phone };
+                
+                // تغيير شكل الهيدر
+                document.getElementById('navAuthArea').innerHTML = `
+                    <div class="nav-user-info">
+                        <span class="nav-user-name"><i class="fas fa-user"></i> ${name}</span>
+                        <button class="btn-logout" onclick="handleLogout()">تسجيل خروج</button>
+                    </div>
+                `;
+                closeAuthModal();
             }
         }
 
         function handleLogout() {
-            currentUser = null;
-            localStorage.removeItem('iwon_logged_user');
-            updateNavAuth();
+            isLoggedIn = false;
+            currentUser = { name: "", phone: "" };
+            document.getElementById('navAuthArea').innerHTML = `
+                <button class="btn" style="padding: 8px 18px; font-size: 0.95rem;" onclick="openAuthModal()">تسجيل الدخول</button>
+            `;
         }
 
+        // تفعيل كود الخصم
+        const discountInput = document.getElementById('liveDiscountInput');
+        const discountBox = document.getElementById('liveDiscountWrapper');
+        
+        discountInput.addEventListener('input', function() {
+            const val = this.value.trim().toUpperCase();
+            if (val === 'ZS15') {
+                discountBox.classList.add('success');
+                discountMultiplier = 0.9; // 10% discount
+            } else {
+                discountBox.classList.remove('success');
+                discountMultiplier = 1;
+            }
+            updatePrices();
+        });
+
+        // تحديث الأسعار بالصفحة
+        function updatePrices() {
+            const priceElements = document.querySelectorAll('.price-val');
+            priceElements.forEach(el => {
+                const basePrice = parseInt(el.getAttribute('data-base'));
+                const currentPrice = Math.round(basePrice * discountMultiplier);
+                
+                el.innerText = currentPrice;
+                
+                if (discountMultiplier < 1) {
+                    el.classList.add('discounted');
+                } else {
+                    el.classList.remove('discounted');
+                }
+            });
+        }
+
+        // دالة إنشاء الطلب وإظهار الفاتورة
         function handleOrderClick(serviceName, category, basePrice) {
-            if (!currentUser) {
-                pendingOrder = { serviceName, category, basePrice };
-                openAuthModal('login', true);
+            if (!isLoggedIn) {
+                document.getElementById('authNoticeMsg').style.display = 'block';
+                openAuthModal();
                 return;
             }
-            processOrder(serviceName, category, basePrice);
-        }
 
-        function processOrder(serviceName, category, basePrice) {
-            const finalPrice = isDiscountActive ? basePrice * 0.9 : basePrice;
-            const orderId = '#EW-' + Math.floor(1000 + Math.random() * 9000);
+            const finalPrice = Math.round(basePrice * discountMultiplier);
+            const randomOrderNum = Math.floor(1000 + Math.random() * 9000);
+            const orderId = `#EW-${randomOrderNum}`;
 
-            document.getElementById('modalCustomerName').textContent = currentUser.name;
-            document.getElementById('modalCustomerUsername').textContent = '@' + currentUser.username;
-            document.getElementById('modalOrderId').textContent = orderId;
-            document.getElementById('modalServiceName').textContent = serviceName;
-            document.getElementById('modalCategory').textContent = category;
-            document.getElementById('modalPrice').textContent = (finalPrice % 1 === 0 ? finalPrice : finalPrice.toFixed(1)) + ' ر.س' + (isDiscountActive ? ' (خصم 10%)' : '');
+            // تعبئة بيانات الفاتورة
+            document.getElementById('modalCustomerName').innerText = currentUser.name;
+            document.getElementById('modalCustomerPhone').innerText = currentUser.phone;
+            document.getElementById('modalOrderId').innerText = orderId;
+            document.getElementById('modalServiceName').innerText = serviceName;
+            document.getElementById('modalCategory').innerText = category;
+            document.getElementById('modalPrice').innerText = finalPrice + ' ر.س';
 
-            const telegramMsg = encodeURIComponent(`مرحباً، أرغب في تأكيد الطلب التالي:\n- رقم الطلب: ${orderId}\n- العميل: ${currentUser.name}\n- الخدمة: ${serviceName} (${category})\n- السعر: ${finalPrice} ر.س`);
-            document.getElementById('modalTelegramBtn').href = `https://t.me/JILZ90?text=${telegramMsg}`;
+            // تجهيز رابط تيليجرام
+            let textMessage = `مرحباً، أود إرسال فاتورة طلبي:\n\n`;
+            textMessage += `🔹 رقم الطلب: ${orderId}\n`;
+            textMessage += `👤 الاسم: ${currentUser.name}\n`;
+            textMessage += `📱 الجوال: ${currentUser.phone}\n`;
+            textMessage += `🛠 الخدمة: ${serviceName} (${category})\n`;
+            textMessage += `💵 السعر الإجمالي: ${finalPrice} ر.س\n`;
+            
+            if (discountMultiplier < 1) {
+                textMessage += `✅ (تم تطبيق كود الخصم ZS15 بنسبة 10%)\n`;
+            }
 
+            const telegramLink = `https://t.me/JILZ90?text=${encodeURIComponent(textMessage)}`;
+            document.getElementById('modalTelegramBtn').setAttribute('href', telegramLink);
+
+            // إظهار الفاتورة
             document.getElementById('invoiceModal').classList.add('active');
         }
 
