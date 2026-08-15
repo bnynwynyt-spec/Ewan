@@ -579,8 +579,8 @@
                     <span class="value" id="modalCustomerName">---</span>
                 </div>
                 <div class="invoice-row">
-                    <span class="label">رقم الجوال:</span>
-                    <span class="value" id="modalCustomerPhone">---</span>
+                    <span class="label">اسم المستخدم:</span>
+                    <span class="value" id="modalCustomerUsername">---</span>
                 </div>
                 <div class="invoice-row">
                     <span class="label">رقم الطلب:</span>
@@ -632,8 +632,8 @@
 
                 <form class="auth-form" onsubmit="handleLogin(event)">
                     <div class="auth-input-group">
-                        <label>رقم الجوال</label>
-                        <input type="tel" id="loginPhone" class="auth-input" placeholder="05xxxxxxxx" required>
+                        <label>اسم المستخدم</label>
+                        <input type="text" id="loginUsername" class="auth-input" placeholder="ادخل اسم المستخدم" required>
                     </div>
                     <div class="auth-input-group">
                         <label>كلمة المرور</label>
@@ -658,8 +658,8 @@
                         <input type="text" id="regName" class="auth-input" placeholder="ادخل اسمك الكامل" required>
                     </div>
                     <div class="auth-input-group">
-                        <label>رقم الجوال</label>
-                        <input type="tel" id="regPhone" class="auth-input" placeholder="05xxxxxxxx" required>
+                        <label>اسم المستخدم</label>
+                        <input type="text" id="regUsername" class="auth-input" placeholder="ادخل اسم المستخدم" required>
                     </div>
                     <div class="auth-input-group">
                         <label>كلمة المرور</label>
@@ -675,102 +675,74 @@
         </div>
     </div>
 
-    <!-- ========================================= -->
-    <!-- البرمجة السكربتية (JavaScript) -->
-    <!-- ========================================= -->
+    <!-- جافاسكريبت المنصة وتفعيل كود الخصم ZS15 -->
     <script>
-        // إخفاء التحميل بأمان عند الفتح
-        function hideLoader() {
-            const loader = document.getElementById('loader');
-            if (loader) {
-                loader.style.opacity = '0';
-                setTimeout(() => {
-                    loader.style.display = 'none';
-                }, 400);
-            }
-        }
-        window.addEventListener('DOMContentLoaded', hideLoader);
-        window.addEventListener('load', hideLoader);
-        setTimeout(hideLoader, 1000); // أمان إضافي للمتصفحات
+        let currentUser = JSON.parse(localStorage.getItem('iwon_logged_user')) || null;
+        let pendingOrder = null;
 
-        // إدارة كود الخصم ZS15 بخصم 10%
-        const TARGET_COUPON = 'ZS15';
-        const DISCOUNT_RATE = 0.10;
-
-        function checkDiscountActive() {
-            const input = document.getElementById('liveDiscountInput');
-            if (!input) return false;
-            return input.value.trim().toUpperCase() === TARGET_COUPON;
-        }
-
-        function updateDiscountUI() {
-            const wrapper = document.getElementById('liveDiscountWrapper');
-            const priceElements = document.querySelectorAll('.price-val');
-            const active = checkDiscountActive();
-
-            if (active) {
-                if (wrapper) wrapper.classList.add('success');
-                priceElements.forEach(el => {
-                    const basePrice = parseFloat(el.getAttribute('data-base'));
-                    if (!isNaN(basePrice)) {
-                        const discountedPrice = basePrice * (1 - DISCOUNT_RATE);
-                        el.textContent = Number.isInteger(discountedPrice) ? discountedPrice : discountedPrice.toFixed(1);
-                        el.classList.add('discounted');
-                    }
-                });
-            } else {
-                if (wrapper) wrapper.classList.remove('success');
-                priceElements.forEach(el => {
-                    const basePrice = el.getAttribute('data-base');
-                    if (basePrice) {
-                        el.textContent = basePrice;
-                        el.classList.remove('discounted');
-                    }
-                });
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const input = document.getElementById('liveDiscountInput');
-            if (input) {
-                input.addEventListener('input', updateDiscountUI);
-                input.addEventListener('keyup', updateDiscountUI);
-            }
-        });
-
-        // إدارة المستخدمين والتسجيل
-        let currentUser = JSON.parse(localStorage.getItem('iwan_user')) || null;
-
-        function updateNavAuthUI() {
-            const navAuthArea = document.getElementById('navAuthArea');
-            if (!navAuthArea) return;
-
+        function updateNavAuth() {
+            const authArea = document.getElementById('navAuthArea');
             if (currentUser) {
-                navAuthArea.innerHTML = `
+                authArea.innerHTML = `
                     <div class="nav-user-info">
-                        <span class="nav-user-name"><i class="fas fa-user-circle"></i> ${currentUser.name}</span>
+                        <span class="nav-user-name"><i class="fas fa-user-check"></i> ${currentUser.name}</span>
                         <button class="btn-logout" onclick="handleLogout()">خروج</button>
                     </div>
                 `;
             } else {
-                navAuthArea.innerHTML = `
-                    <button class="btn" style="padding: 8px 18px; font-size: 0.95rem;" onclick="openAuthModal('login')">تسجيل الدخول</button>
-                `;
+                authArea.innerHTML = `<button class="btn" style="padding: 8px 18px; font-size: 0.95rem;" onclick="openAuthModal('login')">تسجيل الدخول</button>`;
             }
         }
 
-        updateNavAuthUI();
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('loader');
+            setTimeout(() => {
+                loader.style.opacity = '0';
+                setTimeout(() => loader.style.display = 'none', 500);
+            }, 600);
+            updateNavAuth();
+        });
 
-        function openAuthModal(tab = 'login', showNotice = false) {
-            const modal = document.getElementById('authModal');
-            const noticeMsg = document.getElementById('authNoticeMsg');
-            
-            if (noticeMsg) {
-                noticeMsg.style.display = showNotice ? 'block' : 'none';
+        // تفعيل خصم ZS15 بنسبة 10%
+        const discountInput = document.getElementById('liveDiscountInput');
+        const discountWrapper = document.getElementById('liveDiscountWrapper');
+        let isDiscountActive = false;
+
+        discountInput.addEventListener('input', (e) => {
+            const code = e.target.value.trim().toUpperCase();
+            const prices = document.querySelectorAll('.price-val');
+
+            if (code === 'ZS15') {
+                isDiscountActive = true;
+                discountWrapper.classList.add('success');
+                prices.forEach(priceEl => {
+                    const basePrice = parseFloat(priceEl.getAttribute('data-base'));
+                    const discountedPrice = basePrice * 0.9;
+                    priceEl.textContent = discountedPrice % 1 === 0 ? discountedPrice : discountedPrice.toFixed(1);
+                    priceEl.classList.add('discounted');
+                });
+            } else {
+                isDiscountActive = false;
+                discountWrapper.classList.remove('success');
+                prices.forEach(priceEl => {
+                    const basePrice = priceEl.getAttribute('data-base');
+                    priceEl.textContent = basePrice;
+                    priceEl.classList.remove('discounted');
+                });
             }
+        });
 
-            switchAuthTab(tab);
+        function openAuthModal(tab = 'login', showWarning = false) {
+            const modal = document.getElementById('authModal');
+            const warningMsg = document.getElementById('authNoticeMsg');
             modal.classList.add('active');
+            
+            if (showWarning) {
+                warningMsg.style.display = 'block';
+            } else {
+                warningMsg.style.display = 'none';
+            }
+            switchAuthTab(tab);
         }
 
         function closeAuthModal() {
@@ -778,91 +750,75 @@
         }
 
         function switchAuthTab(tab) {
-            const loginForm = document.getElementById('loginFormContainer');
-            const regForm = document.getElementById('registerFormContainer');
-
+            const loginContainer = document.getElementById('loginFormContainer');
+            const registerContainer = document.getElementById('registerFormContainer');
             if (tab === 'login') {
-                loginForm.style.display = 'block';
-                regForm.style.display = 'none';
+                loginContainer.style.display = 'block';
+                registerContainer.style.display = 'none';
             } else {
-                loginForm.style.display = 'none';
-                regForm.style.display = 'block';
-            }
-        }
-
-        function handleLogin(e) {
-            e.preventDefault();
-            const phone = document.getElementById('loginPhone').value.trim();
-            const pass = document.getElementById('loginPass').value.trim();
-
-            if (phone && pass) {
-                currentUser = { name: 'عميل إيوان', phone: phone };
-                localStorage.setItem('iwan_user', JSON.stringify(currentUser));
-                updateNavAuthUI();
-                closeAuthModal();
+                loginContainer.style.display = 'none';
+                registerContainer.style.display = 'block';
             }
         }
 
         function handleRegister(e) {
             e.preventDefault();
-            const name = document.getElementById('regName').value.trim();
-            const phone = document.getElementById('regPhone').value.trim();
-            const pass = document.getElementById('regPass').value.trim();
+            const name = document.getElementById('regName').value;
+            const username = document.getElementById('regUsername').value;
 
-            if (name && phone && pass) {
-                currentUser = { name, phone };
-                localStorage.setItem('iwan_user', JSON.stringify(currentUser));
-                updateNavAuthUI();
-                closeAuthModal();
+            currentUser = { name, username };
+            localStorage.setItem('iwon_logged_user', JSON.stringify(currentUser));
+            updateNavAuth();
+            closeAuthModal();
+
+            if (pendingOrder) {
+                processOrder(pendingOrder.serviceName, pendingOrder.category, pendingOrder.basePrice);
+                pendingOrder = null;
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            currentUser = { name: username, username: username };
+            localStorage.setItem('iwon_logged_user', JSON.stringify(currentUser));
+            updateNavAuth();
+            closeAuthModal();
+
+            if (pendingOrder) {
+                processOrder(pendingOrder.serviceName, pendingOrder.category, pendingOrder.basePrice);
+                pendingOrder = null;
             }
         }
 
         function handleLogout() {
             currentUser = null;
-            localStorage.removeItem('iwan_user');
-            updateNavAuthUI();
+            localStorage.removeItem('iwon_logged_user');
+            updateNavAuth();
         }
 
-        // دالة الطلب والفاتورة
         function handleOrderClick(serviceName, category, basePrice) {
             if (!currentUser) {
+                pendingOrder = { serviceName, category, basePrice };
                 openAuthModal('login', true);
                 return;
             }
+            processOrder(serviceName, category, basePrice);
+        }
 
-            const isDiscounted = checkDiscountActive();
-            let finalPrice = basePrice;
-
-            if (isDiscounted) {
-                finalPrice = basePrice * (1 - DISCOUNT_RATE);
-                finalPrice = Number.isInteger(finalPrice) ? finalPrice : finalPrice.toFixed(1);
-            }
-
+        function processOrder(serviceName, category, basePrice) {
+            const finalPrice = isDiscountActive ? basePrice * 0.9 : basePrice;
             const orderId = '#EW-' + Math.floor(1000 + Math.random() * 9000);
 
             document.getElementById('modalCustomerName').textContent = currentUser.name;
-            document.getElementById('modalCustomerPhone').textContent = currentUser.phone;
+            document.getElementById('modalCustomerUsername').textContent = '@' + currentUser.username;
             document.getElementById('modalOrderId').textContent = orderId;
             document.getElementById('modalServiceName').textContent = serviceName;
             document.getElementById('modalCategory').textContent = category;
-            document.getElementById('modalPrice').textContent = `${finalPrice} ر.س`;
+            document.getElementById('modalPrice').textContent = (finalPrice % 1 === 0 ? finalPrice : finalPrice.toFixed(1)) + ' ر.س' + (isDiscountActive ? ' (خصم 10%)' : '');
 
-            const telegramUsername = 'JILZ90';
-            let message = `مرحباً، أود إكمال الطلب التالي:\n\n` +
-                          `👤 **الاسم:** ${currentUser.name}\n` +
-                          `📱 **الجوال:** ${currentUser.phone}\n` +
-                          `📑 **رقم الطلب:** ${orderId}\n` +
-                          `🛠️ **الخدمة:** ${serviceName} (${category})\n` +
-                          `💰 **السعر:** ${finalPrice} ر.س\n`;
-
-            if (isDiscounted) {
-                message += `🏷️ **كود الخصم:** ZS15 (تم تطبيق خصم 10%)\n`;
-            }
-
-            message += `\nيرجى تزودي بالتفاصيل لإكمال الطلب.`;
-
-            const telegramUrl = `https://t.me/${telegramUsername}?text=${encodeURIComponent(message)}`;
-            document.getElementById('modalTelegramBtn').setAttribute('href', telegramUrl);
+            const telegramMsg = encodeURIComponent(`مرحباً، أرغب في تأكيد الطلب التالي:\n- رقم الطلب: ${orderId}\n- العميل: ${currentUser.name}\n- الخدمة: ${serviceName} (${category})\n- السعر: ${finalPrice} ر.س`);
+            document.getElementById('modalTelegramBtn').href = `https://t.me/JILZ90?text=${telegramMsg}`;
 
             document.getElementById('invoiceModal').classList.add('active');
         }
